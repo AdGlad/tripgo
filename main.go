@@ -14,18 +14,26 @@ import (
 
 // User represents the structure of user data in Firestore
 type User struct {
-	Badges    []map[string]interface{} `json:"badges"`
-	Countries map[string]Country       `json:"countries"`
+	Badges       []map[string]interface{} `json:"badges"`
+	Countries    map[string]Country       `json:"countries"`
+	PlaceHistory map[string]PlaceHistory  `json:"placeHistory"`
+	//PlaceHistory []PlaceHistory `json:"placeHistory"`
 }
 
 type Region struct {
-	RegionCode string `json:"regionCode"`
+	RegionCode   string                  `json:"regionCode"`
+	PlaceHistory map[string]PlaceHistory `json:"placehistory"` // Adjusted to match Firestore
 	// Add other relevant fields from the JSON structure
 }
 
 type Country struct {
 	CountryCode string            `json:"countryCode"`
 	Regions     map[string]Region `json:"regions"`
+}
+
+type PlaceHistory struct {
+	Country string `json:"countryName"`
+	City    string `json:"city"`
 }
 
 // Country represents the structure of country data in Firestore
@@ -39,6 +47,7 @@ const AsianExplorerBadgeID = "asian_explorer"
 const GlobetrotterBadgeID = "globetrotter"
 const PolarExplorerBadgeID = "polar_explorer"
 const OzzieExplorerBadgeID = "ozzie_explorer"
+const TopCitiesBadgeID = "city_explorer"
 
 // Function to generate a random color code
 func randomColor() string {
@@ -114,12 +123,25 @@ func main() {
 			continue
 		}
 
+		// for _, country := range user.Countries {
+		// 	for _, region := range country.Regions {
+		// 		for _, placeHistory := range region.PlaceHistory {
+		// 			log.Printf("Place History City: %s", placeHistory.City)
+		// 			log.Printf("Place History Country: %s", placeHistory.Country)
+		// 			log.Printf("Place History Country: %s", country.CountryCode)
+
+		// 			// Additional processing...
+		// 		}
+		// 	}
+		// }
+
 		// processUser(&user)
-		processAsianExplorerBadge(&user) // Process Asian Explorer badge
-		processGlobetrotterBadge(&user)  // Process Globetrotter badge
-		processPolarExplorerBadge(&user) // Process Polar Explorer badge
-		processEuroExplorerBadge(&user)  // Process Polar Explorer badge
-		processOzzieExplorerBadge(&user) // Process Polar Explorer badge
+		processAsianExplorerBadge(&user)        // Process Asian Explorer badge
+		processGlobetrotterBadge(&user)         // Process Globetrotter badge
+		processPolarExplorerBadge(&user)        // Process Polar Explorer badge
+		processEuroExplorerBadge(&user)         // Process Polar Explorer badge
+		processOzzieExplorerBadge(&user)        // Process Polar Explorer badge
+		processCityExplorerBadge(&user, client) // Process Polar Explorer badge
 
 		// Convert user struct to a map for updating
 		userMap, err := structToMap(user)
