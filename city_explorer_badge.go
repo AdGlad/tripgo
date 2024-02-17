@@ -94,6 +94,7 @@ func processCityExplorerBadge(user *User, firestoreClient *firestore.Client) {
 					"criteria":    "Visit a Top City",
 					"description": "Awarded for visiting " + city,
 					"name":        "City Explorer: " + strings.Title(city),
+					"type":        "City",
 					"color":       randomColor(),
 					"icon":        "city_symbol",
 				}

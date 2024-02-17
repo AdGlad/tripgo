@@ -28,6 +28,7 @@ func processGlobetrotterBadge(user *User) {
 			"criteria":     "Visit more than 30 different countries",
 			"description":  "Awarded for visiting more than 30 different countries",
 			"name":         "Globetrotter",
+			"type":         "Country",
 			"color":        randomColor(),
 			"icon":         "globe_symbol",
 			"countryCodes": countryCodes,

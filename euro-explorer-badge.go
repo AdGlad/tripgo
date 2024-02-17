@@ -38,6 +38,7 @@ func processEuroExplorerBadge(user *User) {
 			"criteria":     "Visit 5 European Countries",
 			"description":  "Awarded for visiting 5 European countries",
 			"name":         "Euro Explorer",
+			"type":         "Region",
 			"color":        randomColor(),
 			"icon":         "euro_symbol",
 			"countryCodes": getCountryCodes(user.Countries, europeanCountries),

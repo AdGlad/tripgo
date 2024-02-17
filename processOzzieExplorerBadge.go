@@ -56,6 +56,7 @@ func processOzzieExplorerBadge(user *User) {
 			"criteria":     "Visit all Australian regions",
 			"description":  "Awarded for visiting all Australian regions",
 			"name":         "Ozzie Explorer",
+			"type":         "Region",
 			"color":        randomColor(),
 			"icon":         "australia_symbol",
 			"countryCodes": []string{"AU"}, // Australian country code

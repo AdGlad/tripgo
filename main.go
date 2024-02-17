@@ -30,11 +30,16 @@ type Country struct {
 	CountryCode string            `json:"countryCode"`
 	Regions     map[string]Region `json:"regions"`
 }
-
 type PlaceHistory struct {
-	Country string `json:"countryName"`
-	City    string `json:"city"`
+	City        string `json:"city"`                  // Name of the city
+	CountryName string `json:"countryName"`           // Name of the country
+	CountryCode string `json:"countryCode,omitempty"` // Country code, update if empty
 }
+
+// type PlaceHistory struct {
+// 	Country string `json:"countryName"`
+// 	City    string `json:"city"`
+// }
 
 // Country represents the structure of country data in Firestore
 // type Country struct {
@@ -107,6 +112,8 @@ func main() {
 	iter := client.Collection("users").Documents(ctx)
 	defer iter.Stop()
 
+	updateAllUserPlaceHistories(ctx, client)
+
 	for {
 		doc, err := iter.Next()
 		if err != nil {
@@ -136,23 +143,51 @@ func main() {
 		// }
 
 		// processUser(&user)
-		processAsianExplorerBadge(&user)        // Process Asian Explorer badge
-		processGlobetrotterBadge(&user)         // Process Globetrotter badge
-		processPolarExplorerBadge(&user)        // Process Polar Explorer badge
-		processEuroExplorerBadge(&user)         // Process Polar Explorer badge
-		processOzzieExplorerBadge(&user)        // Process Polar Explorer badge
-		processCityExplorerBadge(&user, client) // Process Polar Explorer badge
+		// Check if the document ID matches the specified ID
+		// if doc.Ref.ID == "RaeLS1r88CbkCEiA8CqUBUjKEzJ3" {
+		// 	var user User
+		// 	err = doc.DataTo(&user)
+		// 	if err != nil {
+		// 		log.Printf("Failed to read document: %v", err)
+		// 		continue
+		// 	}
+
+		// 	// Print user document as JSON for the specific document ID
+		// 	printUserAsJSON(user)
+
+		// 	// UpdatePlaceHistoryCountryDetails(&user)
+		// 	// Other processing...
+		// }
+
+		//	UpdatePlaceHistoryCountryDetails(&user)
+		//func updateAllUserPlaceHistories(ctx context.Context, client *firestore.Client) error {
+
+		//		processAsianExplorerBadge(&user)        // Process Asian Explorer badge
+		//		processGlobetrotterBadge(&user)         // Process Globetrotter badge
+		//		processPolarExplorerBadge(&user)        // Process Polar Explorer badge
+		//		processEuroExplorerBadge(&user)         // Process Polar Explorer badge
+		//		processOzzieExplorerBadge(&user)        // Process Polar Explorer badge
+		//		processCityExplorerBadge(&user, client) // Process Polar Explorer badge
 
 		// Convert user struct to a map for updating
-		userMap, err := structToMap(user)
-		if err != nil {
-			log.Printf("Failed to convert user to map: %v", err)
-			continue
-		}
+		// userMap, err := structToMap(user)
+		// if err != nil {
+		// 	log.Printf("Failed to convert user to map: %v", err)
+		// 	continue
+		// }
 
-		_, err = doc.Ref.Set(ctx, userMap, firestore.MergeAll)
-		if err != nil {
-			log.Printf("Failed to update user: %v", err)
-		}
+		// _, err = doc.Ref.Set(ctx, userMap, firestore.MergeAll)
+		// if err != nil {
+		// 	log.Printf("Failed to update user: %v", err)
+		// }
 	}
+}
+
+func printUserAsJSON(user User) {
+	jsonData, err := json.MarshalIndent(user, "", "  ") // Pretty print with 2 spaces indentation
+	if err != nil {
+		log.Printf("Failed to marshal user to JSON: %v", err)
+		return
+	}
+	log.Println(string(jsonData))
 }

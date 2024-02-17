@@ -37,6 +37,7 @@ func processAsianExplorerBadge(user *User) {
 			"criteria":     "Visit 5 Asian Countries",
 			"description":  "Awarded for visiting 5 Asian countries",
 			"name":         "Asian Explorer",
+			"type":         "Region",
 			"color":        randomColor(),
 			"icon":         "asia_symbol",
 			"countryCodes": getCountryCodes(user.Countries, asianCountries),
