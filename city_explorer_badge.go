@@ -24,13 +24,13 @@ type CitiesDocument struct {
 }
 
 // normalizeString transforms a string to a normalized form without diacritics.
-func normalizeString(s string) string {
-	t := transform.Chain(norm.NFD, transform.RemoveFunc(func(r rune) bool {
-		return unicode.Is(unicode.Mn, r) // Mn: Mark, Nonspacing
-	}), norm.NFC)
-	result, _, _ := transform.String(t, s)
-	return strings.ToLower(result)
-}
+// func normalizeString(s string) string {
+// 	t := transform.Chain(norm.NFD, transform.RemoveFunc(func(r rune) bool {
+// 		return unicode.Is(unicode.Mn, r) // Mn: Mark, Nonspacing
+// 	}), norm.NFC)
+// 	result, _, _ := transform.String(t, s)
+// 	return strings.ToLower(result)
+// }
 func processCityExplorerBadge(user *User, firestoreClient *firestore.Client) {
 	log.Printf("Processing CityExplorerBadge")
 	// Fetch the top 50 cities list from Firestore
