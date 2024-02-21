@@ -45,7 +45,7 @@ func main() {
 		processPolarExplorerBadge(&user)        // Process Polar Explorer badge
 		processEuroExplorerBadge(&user)         // Process Polar Explorer badge
 		processOzzieExplorerBadge(&user)        // Process Polar Explorer badge
-		//processCityExplorerBadge(&user, client) // Process Polar Explorer badge
+		processCityExplorerBadge(&user, client) // Process Polar Explorer badge
 
 		//Convert user struct to a map for updating
 		userMap, err := structToMap(user)

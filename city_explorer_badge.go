@@ -5,32 +5,62 @@ import (
 	"log"
 	"strings"
 	"time"
-	"unicode"
 
 	"cloud.google.com/go/firestore"
-	"golang.org/x/text/transform"
-	"golang.org/x/text/unicode/norm"
+	"google.golang.org/api/iterator"
 )
 
 // City represents a city with a name and country.
-type City struct {
-	Name    string `firestore:"city"`
-	Country string `firestore:"country"`
-}
+// type City struct {
+// 	Name    string `firestore:"city"`
+// 	Country string `firestore:"country"`
+// }
 
-// CitiesDocument represents the structure of the Firestore document.
-type CitiesDocument struct {
-	Top50 []City `firestore:"top50"`
-}
+// // CitiesDocument represents the structure of the Firestore document.
+// type CitiesDocument struct {
+// 	Top50 []City `firestore:"top50"`
+// }
 
 // normalizeString transforms a string to a normalized form without diacritics.
-// func normalizeString(s string) string {
-// 	t := transform.Chain(norm.NFD, transform.RemoveFunc(func(r rune) bool {
-// 		return unicode.Is(unicode.Mn, r) // Mn: Mark, Nonspacing
-// 	}), norm.NFC)
-// 	result, _, _ := transform.String(t, s)
-// 	return strings.ToLower(result)
-// }
+//
+//	func normalizeString(s string) string {
+//		t := transform.Chain(norm.NFD, transform.RemoveFunc(func(r rune) bool {
+//			return unicode.Is(unicode.Mn, r) // Mn: Mark, Nonspacing
+//		}), norm.NFC)
+//		result, _, _ := transform.String(t, s)
+//		return strings.ToLower(result)
+//	}
+
+func fetchUserPlaceHistories(ctx context.Context, firestoreClient *firestore.Client, userID string) ([]PlaceHistory, error) {
+	var placeHistories []PlaceHistory
+
+	// Query the placeHistory collection for records where userId matches the provided userID.
+	iter := firestoreClient.Collection("placehistory").Where("userId", "==", userID).Documents(ctx)
+	defer iter.Stop()
+
+	for {
+		doc, err := iter.Next()
+		if err != nil {
+			if err == iterator.Done {
+				break // Exit the loop when all documents have been processed.
+			}
+			log.Printf("Error iterating documents: %v", err)
+			return nil, err // Return nil slice and an error.
+		}
+
+		var placeHistory PlaceHistory
+		if err := doc.DataTo(&placeHistory); err != nil {
+			log.Printf("Error decoding document to Placehistory: %v", err)
+			continue // Optionally, handle the error differently.
+		}
+
+		// Append the fetched PlaceHistory to the slice.
+		placeHistories = append(placeHistories, placeHistory)
+	}
+
+	return placeHistories, nil // Return the slice of PlaceHistory and nil as error.
+}
+
 func processCityExplorerBadge(user *User, firestoreClient *firestore.Client) {
 	log.Printf("Processing CityExplorerBadge")
 	// Fetch the top 50 cities list from Firestore
@@ -55,17 +85,29 @@ func processCityExplorerBadge(user *User, firestoreClient *firestore.Client) {
 		topCities[key] = true
 	}
 
+	// Use fetchUserPlaceHistories to get visited cities
+	placeHistories, err := fetchUserPlaceHistories(ctx, firestoreClient, user.UserID)
+	if err != nil {
+		log.Printf("Error fetching place histories for user %s: %v", user.UserID, err)
+		return
+	}
+
 	// Step 1: Generate a discrete list of visited cities
 	visitedCities := make(map[string]bool)
-	for _, country := range user.Countries {
-		countryCode := strings.ToLower(country.CountryCode)
-		for _, region := range country.Regions {
-			for _, placeHistory := range region.PlaceHistory {
-				cityCountryCombo := normalizeString(placeHistory.City) + "," + countryCode
-				visitedCities[cityCountryCombo] = true
-			}
-		}
+	for _, placeHistory := range placeHistories {
+		cityCountryCombo := normalizeString(placeHistory.City) + "," + strings.ToLower(placeHistory.CountryCode)
+		visitedCities[cityCountryCombo] = true
 	}
+
+	// for _, country := range user.Countries {
+	// 	countryCode := strings.ToLower(country.CountryCode)
+	// 	for _, region := range country.Regions {
+	// 		for _, placeHistory := range region.PlaceHistory {
+	// 			cityCountryCombo := normalizeString(placeHistory.City) + "," + countryCode
+	// 			visitedCities[cityCountryCombo] = true
+	// 		}
+	// 	}
+	// }
 
 	// Step 2: Compare the discrete list to top cities
 	for cityCountryCombo := range visitedCities {

@@ -1,6 +1,10 @@
 // structs.go
 package main
 
+import (
+	"time"
+)
+
 type City struct {
 	Name    string `firestore:"city"`
 	Country string `firestore:"country"`
@@ -72,8 +76,19 @@ type PlaceHistory struct {
 }
 
 // Badge represents the information about a badge awarded to a user.
+// type Badge struct {
+// Name        string `firestore:"name"`
+// AwardedOn   string `firestore:"awardedOn"` // Consider using time.Time for actual timestamps
+// Description string `firestore:"description"`
+// }
+// Badge represents the information about a badge awarded to a user.
 type Badge struct {
-	Name        string `firestore:"name"`
-	AwardedOn   string `firestore:"awardedOn"` // Consider using time.Time for actual timestamps
-	Description string `firestore:"description"`
+	BadgeId     string    `firestore:"badgeId"`
+	Name        string    `firestore:"name"`
+	Type        string    `firestore:"type"`
+	Description string    `firestore:"description"`
+	Criteria    string    `firestore:"criteria"`
+	Color       string    `firestore:"color"` // Assuming color is stored as a string (e.g., hex code)
+	Icon        string    `firestore:"icon"`
+	AchievedOn  time.Time `firestore:"achievedOn"` // Using time.Time for actual timestamps
 }

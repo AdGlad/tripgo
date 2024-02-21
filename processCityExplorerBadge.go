@@ -49,6 +49,8 @@ func processCityExplorerBadge(ctx context.Context, firestoreClient *firestore.Cl
 	}
 
 	for _, user := range users { // Iterating over User objects now
+		log.Printf("user %s: ", user.UserID)
+
 		placeHistories, err := fetchUserPlaceHistories(ctx, firestoreClient, user.UserID) // Use user.UserID
 		if err != nil {
 			log.Printf("Error fetching place histories for user %s: %v", user.UserID, err)
@@ -56,28 +58,70 @@ func processCityExplorerBadge(ctx context.Context, firestoreClient *firestore.Cl
 		}
 
 		for _, placeHistory := range placeHistories {
+			log.Printf("user: %s placeHistory city: %s ", user.UserID, placeHistory.City)
+
 			cityCountryCombo := normalizeString(placeHistory.City) + "," + strings.ToLower(placeHistory.CountryCode)
 
 			for _, topCity := range topCities {
+				log.Printf("user: %s placeHistory city: %s topCity: %s Country: %s", user.UserID, placeHistory.City, topCity.Name, topCity.Country)
+
 				topCityCombo := normalizeString(topCity.Name) + "," + strings.ToLower(topCity.Country)
 
 				if cityCountryCombo == topCityCombo {
 					// Check if badge already awarded
+					badgeId := normalizeString(topCity.Name) + "-" + strings.ToLower(topCity.Country)
+
 					alreadyHasBadge := false
+					// for _, badge := range user.Badges {
+					// 	if badgeName, ok := badge["name"].(string); ok && badgeName == "CityExplorer" {
+					// 		log.Printf("City Explorer badge already awarded to user %s", user.UserID)
+					// 		alreadyHasBadge = true
+					// 		break
+					// 	}
+					// }
+
 					for _, badge := range user.Badges {
-						if badgeName, ok := badge["name"].(string); ok && badgeName == "CityExplorer" {
-							log.Printf("City Explorer badge already awarded to user %s", user.UserID)
+						log.Printf("badge: %s badgeId: %s ", badge["badgeId"].(string), badgeId)
+
+						if id, ok := badge["badgeId"].(string); ok && id == badgeId {
+							log.Printf("Badge already awarded: %s", badgeId)
 							alreadyHasBadge = true
 							break
 						}
 					}
 
 					if !alreadyHasBadge {
-						awardBadge(ctx, firestoreClient, user.UserID, Badge{
-							Name:        "CityExplorer",
-							AwardedOn:   time.Now().Format(time.RFC3339),
-							Description: "Awarded for visiting a top city",
-						})
+						// newBadge := map[string]interface{}{
+						// 	"achievedOn":  time.Now(),
+						// 	"badgeId":     badgeId,
+						// 	"criteria":    "Visit a Top City",
+						// 	"description": "Awarded for visiting " + normalizeString(topCity.Name),
+						// 	"name":        "City Explorer: " + normalizeString(topCity.Name),
+						// 	"type":        "City",
+						// 	"color":       randomColor(),
+						// 	"icon":        "city_symbol",
+						// }
+						newBadge := Badge{
+							BadgeId:     badgeId, // Assume badgeId is a unique identifier for the badge
+							Name:        "City Explorer: " + strings.Title(normalizeString(topCity.Name)),
+							Type:        "City",
+							Description: "Awarded for visiting " + normalizeString(topCity.Name),
+							Criteria:    "Visit a Top City",
+							Color:       randomColor(), // Ensure you have a function to generate a random color
+							Icon:        "city_symbol",
+							//	AchievedOn:  time.Now().Format(time.RFC3339),
+							AchievedOn: time.Now(),
+						}
+						//user.Badges = append(user.Badges, newBadge)
+						log.Printf("New badge awarded: %s", badgeId)
+
+						awardBadge(ctx, firestoreClient, user.UserID, newBadge)
+
+						//awardBadge(ctx, firestoreClient, user.UserID, Badge{
+						//Name:        "CityExplorer",
+						//AwardedOn:   time.Now().Format(time.RFC3339),
+						//Description: "Awarded for visiting a top city",
+						//})
 						log.Printf("Awarded City Explorer badge to user %s for visiting %s", user.UserID, placeHistory.City)
 					}
 					break // Stop checking after awarding the badge
@@ -86,105 +130,6 @@ func processCityExplorerBadge(ctx context.Context, firestoreClient *firestore.Cl
 		}
 	}
 }
-
-// func processCityExplorerBadge(ctx context.Context, firestoreClient *firestore.Client) {
-// 	topCities, err := fetchTopCities(ctx, firestoreClient)
-// 	if err != nil {
-// 		log.Fatalf("Error fetching top cities: %v", err)
-// 	}
-
-// 	userIDs, err := fetchAllUserIDs(ctx, firestoreClient)
-// 	if err != nil {
-// 		log.Fatalf("Error fetching user IDs: %v", err)
-// 	}
-
-// 	for _, userID := range userIDs {
-// 		placeHistories, err := fetchUserPlaceHistories(ctx, firestoreClient, userID)
-// 		if err != nil {
-// 			log.Printf("Error fetching place histories for user %s: %v", userID, err)
-// 			continue
-// 		}
-
-// 		for _, placeHistory := range placeHistories {
-// 			cityCountryCombo := normalizeString(placeHistory.City) + "," + strings.ToLower(placeHistory.CountryCode)
-
-// 			for _, topCity := range topCities {
-// 				topCityCombo := normalizeString(topCity.Name) + "," + strings.ToLower(topCity.Country)
-
-// 				if cityCountryCombo == topCityCombo {
-// 					// awarded := true
-// 					badge := Badge{
-// 						Name:        "CityExplorer",
-// 						AwardedOn:   time.Now().Format(time.RFC3339),
-// 						Description: "Awarded for visiting a top city",
-// 					}
-
-// 					awardBadge(ctx, firestoreClient, userID, badge)
-// 					log.Printf("Awarded City Explorer badge to user %s for visiting %s", userID, placeHistory.City)
-// 					break // Stop checking after awarding the badge
-// 				}
-// 			}
-// 		}
-// 	}
-// }
-
-// func processCityExplorerBadge(ctx context.Context, firestoreClient *firestore.Client) {
-// 	topCities, err := fetchTopCities(ctx, firestoreClient)
-// 	log.Printf("Log topCities %s", topCities)
-
-// 	if err != nil {
-// 		log.Fatalf("Error fetching top cities: %v", err)
-// 	}
-
-// 	// Example: Log fetched top cities for debugging
-// 	for _, city := range topCities {
-// 		log.Printf("Top City: %s, Country: %s", city.Name, city.Country)
-// 	}
-
-// 	// Assuming a function to fetch all user IDs; implement this based on your application's structure
-// 	userIDs, err := fetchAllUserIDs(ctx, firestoreClient)
-// 	if err != nil {
-// 		log.Fatalf("Error fetching user IDs: %v", err)
-// 	}
-
-// 	for _, userID := range userIDs {
-// 		placeHistories, err := fetchUserPlaceHistories(ctx, firestoreClient, userID)
-// 		if err != nil {
-// 			log.Printf("Error fetching place histories for user %s: %v", userID, err)
-// 			continue
-// 		}
-
-// 		awarded := false
-// 		//	log.Printf("Log placeHistories %s", placeHistories)
-
-//         for _, placeHistory := range placeHistories {
-//             cityCountryCombo := normalizeString(placeHistory.City) + "," + strings.ToLower(placeHistory.CountryCode)
-
-//             for _, topCity := range topCities {
-//                 topCityCombo := normalizeString(topCity.Name) + "," + strings.ToLower(topCity.Country)
-
-//                 if cityCountryCombo == topCityCombo {
-//                     awarded := true
-//                     badge := Badge{
-//                         Name:        "CityExplorer",
-//                         AwardedOn:   time.Now().Format(time.RFC3339),
-//                         Description: "Awarded for visiting a top city",
-//                     }
-
-//                     awardBadge(ctx, firestoreClient, userID, badge)
-//                     log.Printf("Awarded City Explorer badge to user %s for visiting %s", userID, placeHistory.City)
-//                     break // Stop checking after awarding the badge
-//                 }
-//             }
-//         }
-
-// 		if awarded {
-// 			log.Printf("Awarded City Explorer badge to user %s", userID)
-// 		} else {
-// 			log.Printf("User %s did not visit any top cities", userID)
-// 		}
-// 	}
-// }
 
 // fetchUserPlaceHistories queries Firestore for place history records associated with a given userID.
 func fetchUserPlaceHistories(ctx context.Context, firestoreClient *firestore.Client, userID string) ([]PlaceHistory, error) {
