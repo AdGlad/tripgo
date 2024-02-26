@@ -19,6 +19,9 @@ func updatePlaceHistory(user *User, firestoreClient *firestore.Client) {
 					continue // Skip this record to avoid the error
 				}
 
+				placeHistory.Nickname = user.Nickname // Set nickname to user's nickname
+				placeHistory.PublicFeedUserApproved = true
+				placeHistory.PublicFeedModeratorApproved = true
 				placeHistoryDoc := firestoreClient.Collection("placehistory").Doc(placeHistory.ID)
 				_, err := placeHistoryDoc.Set(ctx, placeHistory)
 				if err != nil {

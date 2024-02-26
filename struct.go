@@ -17,6 +17,7 @@ type CitiesDocument struct {
 // User represents the structure of user data in Firestore.
 type User struct {
 	UserID    string                   `json:"userId"` // Renaming ID to UserID
+	Nickname    string                   `json:"nickname"` // Renaming ID to UserID
 	Badges    []map[string]interface{} `json:"badges"`
 	Countries map[string]Country       `json:"countries"`
 	// Optional: Include any other fields relevant to your application.
@@ -73,6 +74,9 @@ type PlaceHistory struct {
 	LocationRaw   map[string]interface{} `firestore:"locationRaw"`
 	ImagePaths    []string               `firestore:"imagePaths"`
 	ImageSize     int                    `firestore:"imageSize"`
+	Nickname        string               `firestore:"nickname"`
+	PublicFeedUserApproved        bool   `firestore:"publicFeedUserApproved"`
+	PublicFeedModeratorApproved   bool   `firestore:"publicFeedModeratorApproved"`
 }
 
 // Badge represents the information about a badge awarded to a user.
